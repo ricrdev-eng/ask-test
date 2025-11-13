@@ -1,0 +1,41 @@
+datasource db {
+  provider = "sqlite"
+  url = "file:./prisma/dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Client {
+  id            String         @id @default(cuid())
+  name          String
+  city          String
+  createdAt     DateTime       @default(now())
+  conversations Conversation[]
+}
+
+model Conversation {
+  id          String     @id @default(cuid())
+  isActive      Boolean
+  step        String
+  clientId    String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  userName    String?
+  destination String?
+  checkin     String?
+  checkout    String?
+  messages    Message[]
+  client      Client     @relation(fields: [clientId], references: [id])
+}
+
+model Message {
+  id             String     @id @default(cuid())
+  conversationId String
+  sender         String
+  type           String
+  text           String
+  createdAt      DateTime   @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+}
