@@ -98,7 +98,7 @@ export const steps = [
         checkin: conversation.checkin,
         checkout: conversation.checkout,
       }
-      const rooms = await getRooms(checkin, checkout);
+      const rooms = await getRooms(payload.checkin, payload.checkout);
 
       if (rooms.length === 0) {
         return "Infelizmente não encontrei opções disponíveis para essas datas 😕";

@@ -13,6 +13,7 @@ export async function getRooms(checkin, checkout) {
   await page.goto(url, { waitUntil: "networkidle2" });
 
   await page.waitForSelector('[data-name="acomodacoes"]');
+  await page.waitForSelector('[data-campo="tarifas"] .row.tarifa');
 
   const rooms = await page.evaluate(() => {
     const section = document.querySelector('[data-name="acomodacoes"]');
