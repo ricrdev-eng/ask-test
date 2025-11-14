@@ -12,40 +12,49 @@ export async function getRooms(checkin, checkout) {
 
   await page.goto(url, { waitUntil: "networkidle2" });
 
-  await page.waitForSelector('[data-name="acomodacoes"]');
-  await page.waitForSelector('[data-campo="tarifas"] .row.tarifa');
+  try {
+    const acomodacoes = await page.waitForSelector('[data-name="acomodacoes"]', { timeout: 5000 }).catch(() => null);
+    if (!acomodacoes) return []
+    const tarifas = await page.waitForSelector('[data-campo="tarifas"] .row.tarifa', { timeout: 5000 }).catch(() => null);
+    if (!tarifas) return []
 
-  const rooms = await page.evaluate(() => {
-    const section = document.querySelector('[data-name="acomodacoes"]');
-    const roomElements = section.querySelectorAll(".borda-cor");
+    const rooms = await page.evaluate(() => {
+      const section = document.querySelector('[data-name="acomodacoes"]');
+      const roomElements = section.querySelectorAll(".borda-cor");
 
-    const data = [];
+      const data = [];
 
-    roomElements.forEach(room => {
-      const name = room.querySelector('[data-campo="titulo"]')?.innerText.trim() || "";
-      const description = room.querySelector(".descricao")?.innerText.trim() || "";
-      const caracteristicas = room.querySelector('.caracteristicas');
-      const prices = room.querySelectorAll('[data-campo="tarifas"] .row.tarifa');
-      const pricesList = []
-      prices.forEach(price => {
-        const title = price.querySelector('[data-campo="nome"]')?.innerText.trim() || "";
-        const description = price.querySelector('[data-campo="descricao"]')?.innerText.trim() || "";
-        const value = price.querySelector('[data-campo="valor"]')?.innerText.trim() || "";
+      roomElements.forEach(room => {
+        const name = room.querySelector('[data-campo="titulo"]')?.innerText.trim() || "";
+        const description = room.querySelector(".descricao")?.innerText.trim() || "";
+        const caracteristicas = room.querySelector('.caracteristicas');
+        const prices = room.querySelectorAll('[data-campo="tarifas"] .row.tarifa');
+        const pricesList = []
+        prices.forEach(price => {
+          const title = price.querySelector('[data-campo="nome"]')?.innerText.trim() || "";
+          const description = price.querySelector('[data-campo="descricao"]')?.innerText.trim() || "";
+          const value = price.querySelector('[data-campo="valor"]')?.innerText.trim() || "";
 
-        if (title || description || value) {
-          pricesList.push({ title, description, value });
+          if (title || description || value) {
+            pricesList.push({ title, description, value });
+          }
+        });
+        const image = room.querySelector("img")?.src || "";
+
+        if (name) {
+          data.push({ name, description, caracteristicas, prices: pricesList, image });
         }
       });
-      const image = room.querySelector("img")?.src || "";
 
-      if (name) {
-        data.push({ name, description, caracteristicas, prices: pricesList, image });
-      }
+      return data;
     });
 
-    return data;
-  });
-
+    await browser.close();
+    return rooms;
+  } catch (error) {
+    console.error("Erro no crawler:", err);
+    return null;
+  } finally {
   await browser.close();
-  return rooms;
+}
 }

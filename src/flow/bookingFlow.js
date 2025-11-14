@@ -100,8 +100,8 @@ export const steps = [
       }
       const rooms = await getRooms(payload.checkin, payload.checkout);
 
-      if (rooms.length === 0) {
-        return "Infelizmente não encontrei opções disponíveis para essas datas 😕";
+      if (!rooms || rooms.length === 0) {
+        return "Infelizmente não encontrei opções disponíveis para essas datas";
       }
 
       const items = rooms.map(room => ({
