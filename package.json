@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon ./src/index.js",
+    "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "train-nlp": "node ./src/train-nlp.js"
+    "train-nlp": "node ./src/train-nlp.js",
+    "main": "serverless.js"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "node-nlp": "^5.0.0-alpha.5",
+    "postgres": "^3.4.7",
     "prisma": "^6.19.0",
     "puppeteer": "^24.29.1"
   },
