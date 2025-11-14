@@ -3,7 +3,6 @@ import { getRooms } from "../services/crawler.js";
 
 const router = express.Router();
 
-// POST /search
 router.post("/", async (req, res) => {
   try {
     const { checkin, checkout } = req.body;

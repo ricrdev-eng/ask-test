@@ -1,5 +1,6 @@
 import { formatDate } from "../utils/formatDate.js"
 import { extractName } from "../services/nameRegex.js";
+import { getRooms } from "../services/crawler.js";
 
 export const steps = [
   {
@@ -97,12 +98,7 @@ export const steps = [
         checkin: conversation.checkin,
         checkout: conversation.checkout,
       }
-      const response = await fetch("http://localhost:8080/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const rooms = await response.json();
+      const rooms = await getRooms(checkin, checkout);
 
       if (rooms.length === 0) {
         return "Infelizmente não encontrei opções disponíveis para essas datas 😕";
