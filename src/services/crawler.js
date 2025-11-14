@@ -26,7 +26,6 @@ export async function getRooms(checkin, checkout) {
       const description = room.querySelector(".descricao")?.innerText.trim() || "";
       const caracteristicas = room.querySelector('.caracteristicas');
       const prices = room.querySelectorAll('[data-campo="tarifas"] .row.tarifa');
-      console.log('prices teste', prices)
       const pricesList = []
       prices.forEach(price => {
         const title = price.querySelector('[data-campo="nome"]')?.innerText.trim() || "";
