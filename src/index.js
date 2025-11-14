@@ -1,16 +1,7 @@
-import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
-import searchRouter from "./routes/search.js";
-import chatRouter from "./routes/chat.js";
+import app from "../server.js";
 
-dotenv.config();
-const app = express();
+const PORT = process.env.PORT || 8080;
 
-app.use(cors());
-app.use(express.json());
-
-app.use("/search", searchRouter);
-app.use("/chat", chatRouter);
-
-export default app;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
