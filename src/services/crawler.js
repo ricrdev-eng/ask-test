@@ -1,8 +1,6 @@
 import puppeteer from "puppeteer";
 
 export async function getRooms(checkin, checkout) {
-  console.log('checkin', checkin)
-  console.log('checkout', checkout)
   const url = `https://reservations.fasthotel.me/188/214?entrada=${checkin}&saida=${checkout}&adultos=1#acomodacoes`;
   const browser = await puppeteer.launch({
     headless: true,
@@ -27,6 +25,7 @@ export async function getRooms(checkin, checkout) {
       const description = room.querySelector(".descricao")?.innerText.trim() || "";
       const caracteristicas = room.querySelector('.caracteristicas');
       const prices = room.querySelectorAll('[data-campo="tarifas"] .row.tarifa');
+      console.log('prices teste', prices)
       const pricesList = []
       prices.forEach(price => {
         const title = price.querySelector('[data-campo="nome"]')?.innerText.trim() || "";

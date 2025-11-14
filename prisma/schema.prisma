@@ -1,10 +1,23 @@
 datasource db {
-  provider = "sqlite"
-  url = "file:./prisma/dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
+}
+
+enum SenderType {
+  BOT
+  USER
+}
+
+enum MessageType {
+  TEXT
+  DATE
+  QUESTION
+  CAROUSEL
+  FINISH
 }
 
 model Client {
@@ -20,6 +33,7 @@ model Conversation {
   isActive      Boolean
   step        String
   clientId    String
+  client      Client     @relation(fields: [clientId], references: [id])
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   userName    String?
@@ -27,15 +41,15 @@ model Conversation {
   checkin     String?
   checkout    String?
   messages    Message[]
-  client      Client     @relation(fields: [clientId], references: [id])
 }
 
 model Message {
   id             String     @id @default(cuid())
   conversationId String
-  sender         String
-  type           String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         SenderType
+  type           MessageType
+  data           Json?
   text           String
   createdAt      DateTime   @default(now())
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
 }

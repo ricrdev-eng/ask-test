@@ -29,10 +29,3 @@ const ConversationService = {
 }
 
 export default ConversationService;
-// .chat-bubble {
-//   max-width: 75%;
-//
-//   border-radius: 12px;
-//   color: white;
-//   animation: fadeIn 0.25s ease-out;
-// }

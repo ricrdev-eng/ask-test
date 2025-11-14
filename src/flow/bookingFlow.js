@@ -1,76 +1,86 @@
 import { formatDate } from "../utils/formatDate.js"
+import { extractName } from "../services/nameRegex.js";
 
 export const steps = [
   {
     step: "start",
-    type: "text",
+    type: "TEXT",
     text: "Olá! Sou a Ricardo do RccD Resorts.",
     jump: "name"
   },
   {
     step: "name",
-    type: "question",
-    text: "Perfeito! Qual o seu nome? 😊",
+    type: "QUESTION",
+    text: "Qual o seu nome? 😊",
     jump: "checkin",
     onReceive: async ({ conversation, message, prisma }) => {
-      const name = message.text.split(" ")[0];
-      await prisma.client.update({
-        where: { id: conversation.clientId },
-        data: { name }
+      const name = extractName(message.text) || message.text.split(" ")[0] || "Viajante";
+      conversation.userName = name;
+
+      await prisma.conversation.update({
+        where: { id: conversation.id },
+        data: { userName: name }
       });
     }
   },
   {
     step: "checkin",
-    type: "date",
-    text: "Ótimo! Qual será a data do check-in?",
+    type: "DATE",
+    text: "checkin-output",
     jump: "checkout",
     onReceive: async ({ conversation, message, prisma }) => {
       await prisma.conversation.update({
         where: { id: conversation.id },
         data: { checkin: message.text }
       });
+    },
+    script: async () => {
+      return "Ótimo! Qual será a data do check-in?";
     }
   },
   {
     step: "checkout",
-    type: "date",
-    text: "Perfeito! Agora informe a data de check-out:",
+    type: "DATE",
+    text: "checkout-output",
     jump: "orderSummary",
     onReceive: async ({ conversation, message, prisma }) => {
       await prisma.conversation.update({
         where: { id: conversation.id },
         data: { checkout: message.text }
       });
+    },
+    script: async ({ conversation, message, prisma }) => {
+      return "Perfeito! Agora informe a data de check-out:";
     }
   },
   {
     step: "orderSummary",
-    type: "text",
+    type: "TEXT",
     text: "orderSummary-output",
     script: ({ conversation }) => {
       const checkinFormatted = formatDate(conversation.checkin);
       const checkoutFormatted = formatDate(conversation.checkout);
 
       return (
-        `Perfeito, ${conversation.userName}! 🎉\n` +
-        `Sua reserva está entre **${checkinFormatted} e ${checkoutFormatted}**`
+        `Perfeito, ${conversation.userName}! 🎉<br>` +
+        `Você selecionou os dias <br><br>` +
+        `<b>${checkinFormatted} e ${checkoutFormatted}</b>`
       );
     },
     jump: "confirmation"
   },
   {
     step: "confirmation",
-    type: "question",
+    type: "QUESTION",
     text: "Deseja que eu procure as melhores opções agora? (Sim / Não)",
     jump: "searching",
     condition: ({ message }) => {
       const answer = (message?.text || "").trim().toLowerCase();
 
-      if (["sim", "yes", "claro"].includes(answer)) {
+      if (["sim", "yes", "claro", "Sim", "s", "ss"].includes(answer)) {
         return "searching";
       }
-      if (["não", "nao", "no"].includes(answer)) {
+      if (["não", "nao", "no", "Nao", "Não", "naum", "nan", "nada", "n", "nn"].includes(answer)) {
         return "checkin";
       }
 
@@ -79,9 +89,9 @@ export const steps = [
   },
   {
     step: "searching",
-    type: "text",
+    type: "CAROUSEL",
     text: "Só um momento… estou buscando as melhores opções. 🔍",
-    jump: "results",
+    jump: "select",
     script: async ({ conversation }) => {
       const payload = {
         checkin: conversation.checkin,
@@ -94,52 +104,36 @@ export const steps = [
       });
       const rooms = await response.json();
 
-      if (!rooms.length) {
-        return "Nenhuma acomodação foi encontrada para essas datas";
+      if (rooms.length === 0) {
+        return "Infelizmente não encontrei opções disponíveis para essas datas 😕";
       }
 
-      let text = `Encontramos **${rooms.length} opções** para as suas datas! 🏨✨\n\n`;
+      const items = rooms.map(room => ({
+        title: room.name,
+        description: room.description,
+        image: room.image,
+        prices: room.prices?.map(p => ({
+          title: p.title,
+          value: p.value,
+          description: p.description
+        })) || []
+      }));
 
-      rooms.forEach((room, index) => {
-        text += `${index + 1}) **${room.name}**\n`;
-        text += `Descrição: ${room.description}\n`;
-        text += `Acesse o link para visualizar as imagens do local: ${room.image}\n`;
-        text += `💰 *Opções de preço:*\n`;
-
-        room.prices?.forEach(price => {
-          text += `• **${price.title}** — ${price.value}\n`;
-          text += `• Descrição: ${price.description}`
-        });
-
-        if (index < rooms.length - 1) {
-          text += `\n---\n\n`;
-        }
-      });
-
-      return text;
+      return {
+        items
+      };
     }
   },
   {
-    step: "results",
-    type: "text",
-    text: "results-output",
-    jump: "done",
-    script: ({ conversation }) => {
-      const rooms = conversation._searchResults;
-
-      if (!rooms || rooms.length === 0) {
-        return "Infelizmente não encontrei opções disponíveis para essas datas.";
-      }
-
-      let msg = "Aqui estão as opções disponíveis:\n\n";
-
-      for (const room of rooms) {
-        msg += `• **${room.name}**\n`;
-        msg += `${room.description}\n`;
-        msg += `Preço por diária: ${room.price}\n\n`;
-      }
-
-      return msg;
-    }
+    step: "select",
+    type: "QUESTION",
+    text: "Gostou de alguma opção? Qual deseja selecionar?",
+    jump: "finish"
+  },
+  {
+    step: "finish",
+    type: "FINISH",
+    text: "Perfeito! Irei agora encerrar nossa conversa. Mas não se preocupe, caso queira uma nova cotação estamos disponíveis.",
+    jump: "done"
   }
 ];

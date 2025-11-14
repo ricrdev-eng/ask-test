@@ -12,7 +12,6 @@ const ClientService = {
     let client = await prisma.client.findUnique({ where: { id: clientId } });
   },
   async updateClient(clientId, data) {
-    console.log('update cliente', data)
     return prisma.client.update({ where: {id: clientId} , data: data });
   },
 }

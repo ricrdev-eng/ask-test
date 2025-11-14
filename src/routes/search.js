@@ -7,7 +7,6 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   try {
     const { checkin, checkout } = req.body;
-    console.log('req.body', req.body)
 
     if (!checkin || !checkout) {
       return res.status(400).json({ error: "Missing checkin or checkout date." });
