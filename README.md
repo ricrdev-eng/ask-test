@@ -29,7 +29,6 @@ Este é o projeto backend que possui duas rotas; Uma para fazer as buscas das va
 
 ```
 PORT=8080
-DATABASE_URL="postgresql://postgres:ItEMOGQrajfvlTtoFqWAmpGsGCMGsRWJ@gondola.proxy.rlwy.net:14410/railway"
 API_URL="https://ask-test-production.up.railway.app"
 NODE_ENV=production
 ```
