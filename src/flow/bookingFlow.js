@@ -72,9 +72,13 @@ export const steps = [
   },
   {
     step: "confirmation",
-    type: "QUESTION",
-    text: "Deseja que eu procure as melhores opções agora? (Sim / Não)",
+    type: "BUTTONS",
+    text: "Deseja que eu procure as melhores opções agora?",
     jump: "searching",
+    buttons: [
+      { title: "Sim", value: "sim", jump: "searching"},
+      { title: "Não", value: "nao", jump: "searching"},
+    ],
     condition: ({ message }) => {
       const answer = (message?.text || "").trim().toLowerCase();
 
@@ -123,7 +127,7 @@ export const steps = [
   {
     step: "select",
     type: "QUESTION",
-    text: "Gostou de alguma opção? Qual deseja selecionar?",
+    text: "Me avise se quiser ver outras datas ou buscar novas opções!",
     jump: "finish"
   },
   {

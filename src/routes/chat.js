@@ -19,7 +19,7 @@ router.post("/", async (req, res) => {
     conversation = await ConversationService.findOpenConversation({ clientId: client.id });
     // Quando o cliente recarrega a página o histórico deve trazer toda a conversa.
     if (conversation && !message) {
-      const history = await ConversationService.conversationHistory(conversation.id);
+      const history = await ConversationService.conversationHistory({conversationId: conversation.id});
       return res.json({
         clientId: client.id,
         conversationId: conversation.id,
@@ -46,7 +46,7 @@ router.post("/", async (req, res) => {
     }
 
     let currentStep = getStep(conversation.step);
-    if ((currentStep.type === "QUESTION" || currentStep.type === "DATE") && message) {
+    if ((currentStep.type === "QUESTION" || currentStep.type === "DATE" || currentStep.type === "BUTTONS" || currentStep.type === "CAROUSEL" ) && message) {
       if (currentStep.onReceive) {
         await currentStep.onReceive({ conversation, message, prisma });
       }
@@ -85,17 +85,27 @@ router.post("/", async (req, res) => {
       }
 
       if (step.type === "CAROUSEL") {
-        messages.push({
-          type: "CAROUSEL",
-          sender: "BOT",
-          data: treatedText
-        });
+        messages.push({ type: "CAROUSEL", sender: "BOT", data: treatedText });
         await MessageService.saveMessage({
           conversationId: conversation.id,
           sender: "BOT",
           type: "CAROUSEL",
           text: "",
           data: treatedText
+        });
+      } else if (step.type === "BUTTONS") {
+        messages.push({
+          type: "BUTTONS",
+          sender: "BOT",
+          text: treatedText,
+          data: step.buttons
+        });
+        await MessageService.saveMessage({
+          conversationId: conversation.id,
+          sender: "BOT",
+          type: "BUTTONS",
+          text: step.text,
+          data: step.buttons
         });
       } else {
         messages.push({
@@ -111,7 +121,7 @@ router.post("/", async (req, res) => {
         });
       }
 
-      if (step.type === "QUESTION" || step.type === "DATE" || step.type === "FINISH") break;
+      if (step.type === "QUESTION" || step.type === "DATE" || step.type === "FINISH" || step.type === "BUTTONS") break;
       if (!step.jump) break;
 
       await ConversationService.updateConversation({
