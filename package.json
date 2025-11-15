@@ -8,7 +8,6 @@
     "dev": "nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "train-nlp": "node ./src/train-nlp.js",
-    "main": "serverless.js",
     "build": "prisma generate",
     "postinstall": "prisma generate"
   },
