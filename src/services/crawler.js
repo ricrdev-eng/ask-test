@@ -27,7 +27,6 @@ export async function getRooms(checkin, checkout) {
       roomElements.forEach(room => {
         const name = room.querySelector('[data-campo="titulo"]')?.innerText.trim() || "";
         const description = room.querySelector(".descricao")?.innerText.trim() || "";
-        const caracteristicas = room.querySelector('.caracteristicas');
         const prices = room.querySelectorAll('[data-campo="tarifas"] .row.tarifa');
         const pricesList = []
         prices.forEach(price => {
@@ -42,7 +41,7 @@ export async function getRooms(checkin, checkout) {
         const image = room.querySelector("img")?.src || "";
 
         if (name) {
-          data.push({ name, description, caracteristicas, prices: pricesList, image });
+          data.push({ name, description, prices: pricesList, image });
         }
       });
 
